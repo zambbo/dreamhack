@@ -1,0 +1,19 @@
+from Crypto.Util.Padding import pad, unpad
+from Crypto.Cipher import AES
+import hashlib
+
+p = 0xf57595bf25dd84521b26143a3ae465d941d441d34fbd86a532e8658a7c4a357bd4976da013215055d20ae3a20cb76004e18863aec36c431b5689c5724ee97c1ab9e800982db194fa120b83483a7ae7f8f9c1f31effc554ecf4db19f054d4a71300991f54da9003303b794e9b59f96069dc06eda9b4b57e6d2391fd792168a877
+A = 0xeb50929bdff3b27da629e64dfb7fca69f6a2195b5718beb05a2c13d8846d56fd3c532a04963713838d5dff78eff0b1f176f3acf340b54cf0d13c5b59d94bc9fb88ad72f6d83161386f097d6d030d8d4853f96d70dc9948153cce380f8cf59c56fba54aa3bbf70fe9fe5df43f3cd04a30c1c0874055cb09e723442c54b782f3ef
+B = 0x25cd73f3ad6891dfd9491ee3c6a635992ddb477e2086f56b89321202b990f020558c38d90d0c273fabac9c9fc4f399f806e8952092ac5a9be13cef13e8d6d92876dbdc59b3f4472011fedb0df09188156e6d9d5c29483adb15af9995dd1b24aafe06da7951b438791e2e73cf7e73af2e6ad9f2f7aeabf2ce687fbc521f84d030
+b_me_key = hashlib.md5(str(pow(B,4,p)).encode()).digest()
+a_me_key = hashlib.md5(str(pow(A,3,p)).encode()).digest()
+alice_cipher_flag = 'd40229763c80ba5778980dd1659b99ddc98c73e0e05c0e54d9216ddcded98cd78e014d429ce2889c68b73603dfa1aee0'
+bob_cipher_flag = '3faf98bdb6b893d2fbf2505cbd0a467f6ff876126671f7c782854364d1d7dc8bc64bc191a307249c3380432b68dc2a3b'
+alice_aes = AES.new(a_me_key, AES.MODE_ECB)
+bob_aes = AES.new(b_me_key, AES.MODE_ECB)
+front = unpad(alice_aes.decrypt(bytearray.fromhex(alice_cipher_flag)), 16)
+back = unpad(bob_aes.decrypt(bytearray.fromhex(bob_cipher_flag)), 16)
+#front = alice_aes.decrypt(bytearray.fromhex(alice_cipher_flag))
+#back = bob_aes.decrypt(bytearray.fromhex(bob_cipher_flag))
+flag = front+back
+print(flag.decode())

